@@ -8,7 +8,7 @@ from PIL import Image
 import base64
 
 st.title("Fabulas para niños")
-image = Image.open('gato_raton.png')
+image = Image.open('el perro y su reflejo.jpg')
 st.image(image, width=350)
 with st.sidebar:
     st.subheader("Esrcibe y/o selecciona texto para ser escuchado.")
