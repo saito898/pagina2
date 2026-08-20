@@ -7,7 +7,7 @@ from gtts import gTTS
 from PIL import Image
 import base64
 
-st.title("Conversión de Texto a Audio")
+st.title("Fabulas para niños")
 image = Image.open('gato_raton.png')
 st.image(image, width=350)
 with st.sidebar:
@@ -19,13 +19,11 @@ try:
 except:
     pass
 
-st.subheader("Una pequeña Fábula.")
-st.write('¡Ay! -dijo el ratón-. El mundo se hace cada día más pequeño. Al principio era tan grande que le tenía miedo. '  
-         ' Corría y corría y por cierto que me alegraba ver esos muros, a diestra y siniestra, en la distancia. ' 
-         ' Pero esas paredes se estrechan tan rápido que me encuentro en el último cuarto y ahí en el rincón está '  
-         ' la trampa sobre la cual debo pasar. Todo lo que debes hacer es cambiar de rumbo dijo el gato...y se lo comió. ' 
-         '  '
-         ' Franz Kafka.'
+st.subheader("El perro y su reflejo")
+st.write("Un perro muy hambriento caminaba de aquí para allá buscando algo para comer, hasta que un carnicero le tiró un hueso."
+         "Llevando el hueso en el hocico, tuvo que cruzar un río. Al mirar su reflejo en el agua creyó ver a otro perro con un hueso más grande que el suyo,"
+         "así que intentó arrebatárselo de un solo mordisco. Pero cuando abrió el hocico, el hueso que llevaba cayó al río y se lo llevó la corriente."
+         "Muy triste quedó aquel perro al darse cuenta de que había soltado algo que era real por perseguir lo que solo era un reflejo."
         
         )
            
