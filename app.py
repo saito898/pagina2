@@ -3,7 +3,6 @@ import os
 import time
 import glob
 from gtts import gTTS
-from PIL import Image
 
 
 # ============================================================
@@ -27,6 +26,11 @@ st.markdown("""
 
 @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap');
 
+
+/* ============================================================
+   COLORES
+   ============================================================ */
+
 :root {
     --rosa: #FF8FAB;
     --rosa-claro: #FFD6E0;
@@ -42,16 +46,34 @@ st.markdown("""
     --texto: #51465A;
 }
 
+
+/* ============================================================
+   FONDO GENERAL
+   ============================================================ */
+
 .stApp {
     background:
-        radial-gradient(circle at 10% 10%, #FFE6ED 0%, transparent 25%),
-        radial-gradient(circle at 90% 15%, #E6F6FF 0%, transparent 25%),
-        radial-gradient(circle at 50% 100%, #FFF4C7 0%, transparent 30%),
+        radial-gradient(
+            circle at 10% 10%,
+            #FFE6ED 0%,
+            transparent 25%
+        ),
+        radial-gradient(
+            circle at 90% 15%,
+            #E6F6FF 0%,
+            transparent 25%
+        ),
+        radial-gradient(
+            circle at 50% 100%,
+            #FFF4C7 0%,
+            transparent 30%
+        ),
         #FFF9FC;
 
     font-family: 'Baloo 2', cursive;
     color: var(--texto);
 }
+
 
 .block-container {
     max-width: 1200px;
@@ -75,22 +97,67 @@ section[data-testid="stSidebar"] {
     border-right: 3px solid #FFD6E0;
 }
 
+
+/* TODOS LOS TEXTOS DEL SIDEBAR EN NEGRO */
+
+section[data-testid="stSidebar"] *,
+section[data-testid="stSidebar"] p,
+section[data-testid="stSidebar"] span,
+section[data-testid="stSidebar"] label,
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3,
+section[data-testid="stSidebar"] h4,
+section[data-testid="stSidebar"] h5,
+section[data-testid="stSidebar"] h6,
+section[data-testid="stSidebar"] div[data-testid="stMarkdownContainer"] *,
+section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] {
+    color: #000000 !important;
+}
+
+
+/* SELECTBOX DEL SIDEBAR */
+
+section[data-testid="stSidebar"] div[data-baseweb="select"],
+section[data-testid="stSidebar"] div[data-baseweb="select"] *,
+section[data-testid="stSidebar"] [role="option"] {
+    color: #000000 !important;
+}
+
+
+/* CAMPO DE TEXTO DEL SIDEBAR */
+
+section[data-testid="stSidebar"] input {
+    color: #000000 !important;
+}
+
+section[data-testid="stSidebar"] input::placeholder {
+    color: #555555 !important;
+    opacity: 1;
+}
+
+
+/* TÍTULOS DEL SIDEBAR */
+
 section[data-testid="stSidebar"] h1,
 section[data-testid="stSidebar"] h2,
 section[data-testid="stSidebar"] h3 {
-    color: #69556F !important;
     font-family: 'Baloo 2', cursive !important;
+    font-weight: 700 !important;
 }
 
 
 /* ============================================================
-   TÍTULOS
+   TÍTULOS PRINCIPALES
    ============================================================ */
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
     font-family: 'Baloo 2', cursive !important;
     color: #51465A !important;
 }
+
 
 .main-title {
     font-size: 3.8rem;
@@ -100,6 +167,7 @@ h1, h2, h3 {
     line-height: 1;
     margin-bottom: 0.3rem;
 }
+
 
 .main-subtitle {
     text-align: center;
@@ -118,7 +186,8 @@ h1, h2, h3 {
     border-radius: 30px;
     padding: 2rem;
     border: 3px solid #FFE0E8;
-    box-shadow: 0 12px 35px rgba(140, 100, 130, 0.12);
+    box-shadow:
+        0 12px 35px rgba(140, 100, 130, 0.12);
     margin-bottom: 1.5rem;
 }
 
@@ -136,9 +205,17 @@ h1, h2, h3 {
     font-size: 1.05rem !important;
 }
 
+
+.stTextArea textarea::placeholder {
+    color: #9B8D9F !important;
+    opacity: 1 !important;
+}
+
+
 .stTextArea textarea:focus {
     border-color: #FF8FAB !important;
-    box-shadow: 0 0 0 3px rgba(255,143,171,0.15) !important;
+    box-shadow:
+        0 0 0 3px rgba(255,143,171,0.15) !important;
 }
 
 
@@ -162,27 +239,37 @@ div[data-baseweb="select"] > div {
     border: none;
     border-radius: 18px;
     padding: 0.8rem 1.2rem;
+
     font-family: 'Baloo 2', cursive;
     font-size: 1.15rem;
     font-weight: 700;
+
     background: linear-gradient(
         135deg,
         #FF8FAB,
         #FFB3C6
     );
-    color: white;
-    box-shadow: 0 7px 0 #E87595;
+
+    color: white !important;
+
+    box-shadow:
+        0 7px 0 #E87595;
+
     transition: all 0.15s ease;
 }
 
+
 .stButton > button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 9px 0 #E87595;
+    box-shadow:
+        0 9px 0 #E87595;
 }
+
 
 .stButton > button:active {
     transform: translateY(4px);
-    box-shadow: 0 3px 0 #E87595;
+    box-shadow:
+        0 3px 0 #E87595;
 }
 
 
@@ -197,32 +284,26 @@ audio {
 
 
 /* ============================================================
-   DOWNLOAD
+   BOTÓN DE DESCARGA
    ============================================================ */
 
 .stDownloadButton > button {
     border: none;
     border-radius: 16px;
-    background: #8BD3A8;
-    color: white;
+
+    background: #8BD3A8 !important;
+    color: white !important;
+
     font-family: 'Baloo 2', cursive;
     font-weight: 700;
-    box-shadow: 0 5px 0 #68B889;
+
+    box-shadow:
+        0 5px 0 #68B889;
 }
+
 
 .stDownloadButton > button:hover {
-    background: #7BC798;
-}
-
-
-/* ============================================================
-   FILE UPLOADER
-   ============================================================ */
-
-[data-testid="stFileUploader"] {
-    background: rgba(255,255,255,0.8);
-    border: 2px dashed #C9B8E8;
-    border-radius: 18px;
+    background: #7BC798 !important;
 }
 
 
@@ -237,7 +318,7 @@ div[data-testid="stAlert"] {
 
 
 /* ============================================================
-   RADIO
+   RADIO BUTTONS
    ============================================================ */
 
 .stRadio label {
@@ -254,6 +335,37 @@ hr {
     border: none;
     border-top: 2px dashed #FFD6E0;
     margin: 1.5rem 0;
+}
+
+
+/* ============================================================
+   TEXTO GENERAL
+   ============================================================ */
+
+p {
+    font-family: 'Baloo 2', cursive;
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 768px) {
+
+    .main-title {
+        font-size: 2.7rem;
+    }
+
+    .main-subtitle {
+        font-size: 1.05rem;
+    }
+
+    .story-card {
+        padding: 1.2rem;
+        border-radius: 22px;
+    }
+
 }
 
 </style>
@@ -282,9 +394,7 @@ def text_to_speech(text, language):
         slow=False
     )
 
-    # Nombre seguro para el archivo
     nombre = "cuento_audio"
-
     archivo = f"temp/{nombre}.mp3"
 
     tts.save(archivo)
@@ -338,11 +448,15 @@ with st.sidebar:
 
     idioma = st.selectbox(
         "¿En qué idioma quieres escuchar?",
-        ["🇪🇸 Español", "🇺🇸 English"]
+        [
+            "🇪🇸 Español",
+            "🇺🇸 English"
+        ]
     )
 
     if idioma == "🇪🇸 Español":
         language_code = "es"
+
     else:
         language_code = "en"
 
@@ -361,9 +475,12 @@ with st.sidebar:
 # ============================================================
 
 st.markdown(
-    '<div class="main-title">🧸 Mi cuento parlanchín</div>',
+    '<div class="main-title">'
+    '🧸 Mi cuento parlanchín'
+    '</div>',
     unsafe_allow_html=True
 )
+
 
 st.markdown(
     '<div class="main-subtitle">'
@@ -382,23 +499,30 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+
 st.subheader("📖 ¡Escribe tu historia!")
+
 
 st.write(
     "Puedes escribir un cuento, una tarea, una historia "
     "o cualquier texto que quieras escuchar."
 )
 
+
 texto = st.text_area(
     "Texto para escuchar",
+
     height=300,
+
     placeholder=(
         "Había una vez...\n\n"
         "Escribe o pega aquí tu texto y luego presiona "
         "el botón para escucharlo. 🌟"
     ),
+
     label_visibility="collapsed"
 )
+
 
 st.markdown(
     '</div>',
@@ -407,10 +531,11 @@ st.markdown(
 
 
 # ============================================================
-# BOTÓN DE GENERACIÓN
+# BOTÓN DE CONVERSIÓN
 # ============================================================
 
 col1, col2, col3 = st.columns([1, 2, 1])
+
 
 with col2:
 
@@ -434,7 +559,9 @@ if convertir:
 
     else:
 
-        with st.spinner("🪄 Preparando tu voz mágica..."):
+        with st.spinner(
+            "🪄 Preparando tu voz mágica..."
+        ):
 
             try:
 
@@ -443,28 +570,43 @@ if convertir:
                     language_code
                 )
 
-                with open(audio_path, "rb") as audio_file:
+
+                with open(
+                    audio_path,
+                    "rb"
+                ) as audio_file:
 
                     audio_bytes = audio_file.read()
+
 
                 st.success(
                     "🎉 ¡Listo! Tu historia está preparada."
                 )
 
-                st.subheader("🎧 ¡Hora de escuchar!")
+
+                st.subheader(
+                    "🎧 ¡Hora de escuchar!"
+                )
+
 
                 st.audio(
                     audio_bytes,
                     format="audio/mp3"
                 )
 
+
                 st.download_button(
                     "💾 Guardar audio",
+
                     data=audio_bytes,
+
                     file_name="mi_cuento.mp3",
+
                     mime="audio/mp3",
+
                     use_container_width=True
                 )
+
 
             except Exception as e:
 
@@ -481,21 +623,28 @@ if not convertir:
 
     st.divider()
 
+
     col1, col2, col3 = st.columns(3)
 
+
     with col1:
+
         st.info(
             "📚 **Cuentos**\n\n"
             "Escribe tus propias historias."
         )
 
+
     with col2:
+
         st.info(
             "🎤 **Voz**\n\n"
             "Convierte tus palabras en audio."
         )
 
+
     with col3:
+
         st.info(
             "🌈 **Diversión**\n\n"
             "¡Escucha y disfruta!"
