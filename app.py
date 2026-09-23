@@ -1,11 +1,9 @@
 import streamlit as st
-import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
-import re
-import io
-from collections import Counter
-from wordcloud import WordCloud, STOPWORDS
+import os
+import time
+import glob
+from gtts import gTTS
+from PIL import Image
 
 
 # ============================================================
@@ -13,8 +11,8 @@ from wordcloud import WordCloud, STOPWORDS
 # ============================================================
 
 st.set_page_config(
-    page_title="WordCloud Studio",
-    page_icon="☁️",
+    page_title="Mi cuento parlanchín 🧸",
+    page_icon="🧸",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -27,205 +25,235 @@ st.set_page_config(
 st.markdown("""
 <style>
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap');
 
 :root {
-    --cream: #F7F4EE;
-    --cream-dark: #EDE8DE;
-    --white: #FFFDF9;
-    --taupe: #B7ADA0;
-    --brown: #665B50;
-    --brown-dark: #403A34;
-    --olive: #69715A;
-    --olive-dark: #505744;
-    --border: #DED8CE;
-    --soft-border: #EAE5DC;
-    --shadow: rgba(74, 65, 54, 0.08);
+    --rosa: #FF8FAB;
+    --rosa-claro: #FFD6E0;
+    --amarillo: #FFD166;
+    --amarillo-claro: #FFF1B8;
+    --azul: #74C0FC;
+    --azul-claro: #DDF3FF;
+    --morado: #B197FC;
+    --morado-claro: #E9DDFF;
+    --verde: #8BD3A8;
+    --verde-claro: #DDF7E7;
+    --blanco: #FFFFFF;
+    --texto: #51465A;
 }
 
-/* Fondo general */
 .stApp {
     background:
-        radial-gradient(circle at 10% 10%, rgba(183,173,160,0.18), transparent 28%),
-        radial-gradient(circle at 90% 20%, rgba(105,113,90,0.10), transparent 25%),
-        var(--cream);
-    color: var(--brown-dark);
-    font-family: 'DM Sans', sans-serif;
+        radial-gradient(circle at 10% 10%, #FFE6ED 0%, transparent 25%),
+        radial-gradient(circle at 90% 15%, #E6F6FF 0%, transparent 25%),
+        radial-gradient(circle at 50% 100%, #FFF4C7 0%, transparent 30%),
+        #FFF9FC;
+
+    font-family: 'Baloo 2', cursive;
+    color: var(--texto);
 }
 
-/* Contenedor principal */
 .block-container {
+    max-width: 1200px;
     padding-top: 2rem;
     padding-bottom: 3rem;
-    max-width: 1400px;
 }
 
-/* Sidebar */
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+
 section[data-testid="stSidebar"] {
-    background: #EFEBE3;
-    border-right: 1px solid var(--border);
-}
+    background: linear-gradient(
+        180deg,
+        #FFF0F5 0%,
+        #F2E9FF 50%,
+        #E9F8FF 100%
+    );
 
-section[data-testid="stSidebar"] > div {
-    padding-top: 2rem;
+    border-right: 3px solid #FFD6E0;
 }
 
 section[data-testid="stSidebar"] h1,
 section[data-testid="stSidebar"] h2,
 section[data-testid="stSidebar"] h3 {
-    color: var(--brown-dark);
+    color: #69556F !important;
+    font-family: 'Baloo 2', cursive !important;
 }
 
-/* Textos */
+
+/* ============================================================
+   TÍTULOS
+   ============================================================ */
+
 h1, h2, h3 {
-    font-family: 'DM Sans', sans-serif !important;
-    color: var(--brown-dark) !important;
+    font-family: 'Baloo 2', cursive !important;
+    color: #51465A !important;
 }
 
-p, label, .stMarkdown {
-    color: var(--brown);
-}
-
-/* Título principal */
 .main-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 3.5rem;
-    font-weight: 700;
-    color: var(--brown-dark);
-    line-height: 1.05;
-    margin-bottom: 0.2rem;
+    font-size: 3.8rem;
+    font-weight: 800;
+    color: #51465A;
+    text-align: center;
+    line-height: 1;
+    margin-bottom: 0.3rem;
 }
 
 .main-subtitle {
-    font-size: 1.05rem;
-    color: #81766A;
-    margin-bottom: 1.8rem;
+    text-align: center;
+    font-size: 1.3rem;
+    color: #8A748F;
+    margin-bottom: 1.5rem;
 }
 
-/* Separadores */
-hr {
-    border: none;
-    border-top: 1px solid var(--border);
-    margin: 1.5rem 0;
+
+/* ============================================================
+   TARJETA PRINCIPAL
+   ============================================================ */
+
+.story-card {
+    background: rgba(255,255,255,0.92);
+    border-radius: 30px;
+    padding: 2rem;
+    border: 3px solid #FFE0E8;
+    box-shadow: 0 12px 35px rgba(140, 100, 130, 0.12);
+    margin-bottom: 1.5rem;
 }
 
-/* Botones */
+
+/* ============================================================
+   ÁREA DE TEXTO
+   ============================================================ */
+
+.stTextArea textarea {
+    background: #FFFFFF !important;
+    border: 3px solid #FFD6E0 !important;
+    border-radius: 20px !important;
+    color: #51465A !important;
+    font-family: 'Baloo 2', cursive !important;
+    font-size: 1.05rem !important;
+}
+
+.stTextArea textarea:focus {
+    border-color: #FF8FAB !important;
+    box-shadow: 0 0 0 3px rgba(255,143,171,0.15) !important;
+}
+
+
+/* ============================================================
+   SELECTORES
+   ============================================================ */
+
+div[data-baseweb="select"] > div {
+    background: #FFFFFF !important;
+    border: 2px solid #DCCFF2 !important;
+    border-radius: 15px !important;
+    color: #51465A !important;
+}
+
+
+/* ============================================================
+   BOTONES
+   ============================================================ */
+
 .stButton > button {
-    width: 100%;
     border: none;
-    border-radius: 12px;
-    padding: 0.7rem 1rem;
-    background: linear-gradient(135deg, var(--olive), var(--olive-dark));
-    color: white;
+    border-radius: 18px;
+    padding: 0.8rem 1.2rem;
+    font-family: 'Baloo 2', cursive;
+    font-size: 1.15rem;
     font-weight: 700;
-    font-family: 'DM Sans', sans-serif;
-    transition: 0.2s ease;
+    background: linear-gradient(
+        135deg,
+        #FF8FAB,
+        #FFB3C6
+    );
+    color: white;
+    box-shadow: 0 7px 0 #E87595;
+    transition: all 0.15s ease;
 }
 
 .stButton > button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 7px 18px rgba(80,87,68,0.20);
+    box-shadow: 0 9px 0 #E87595;
 }
 
-/* Inputs */
-.stTextArea textarea,
-.stTextInput input {
-    background: var(--white) !important;
-    border: 1px solid var(--border) !important;
-    border-radius: 12px !important;
-    color: var(--brown-dark) !important;
+.stButton > button:active {
+    transform: translateY(4px);
+    box-shadow: 0 3px 0 #E87595;
 }
 
-.stTextArea textarea:focus,
-.stTextInput input:focus {
-    border-color: var(--olive) !important;
-    box-shadow: 0 0 0 1px var(--olive) !important;
-}
 
-/* Selectores */
-div[data-baseweb="select"] > div {
-    background: var(--white);
-    border-color: var(--border);
-    border-radius: 12px;
-}
+/* ============================================================
+   AUDIO
+   ============================================================ */
 
-/* File uploader */
-[data-testid="stFileUploader"] {
-    background: var(--white);
-    border: 1px dashed var(--taupe);
-    border-radius: 14px;
-    padding: 0.5rem;
-}
-
-/* Métricas */
-[data-testid="stMetric"] {
-    background: var(--white);
-    border: 1px solid var(--soft-border);
-    border-radius: 16px;
-    padding: 1rem;
-    box-shadow: 0 5px 18px var(--shadow);
-}
-
-[data-testid="stMetricLabel"] {
-    color: #8A8075 !important;
-}
-
-[data-testid="stMetricValue"] {
-    color: var(--brown-dark) !important;
-}
-
-/* Expander */
-.streamlit-expanderHeader {
-    background: var(--white);
-    border-radius: 12px;
-    color: var(--brown-dark);
-    font-weight: 600;
-}
-
-/* Dataframe */
-[data-testid="stDataFrame"] {
-    border-radius: 14px;
-    overflow: hidden;
-}
-
-/* Download */
-.stDownloadButton > button {
+audio {
     width: 100%;
-    background: var(--brown);
-    color: white;
+    border-radius: 15px;
+}
+
+
+/* ============================================================
+   DOWNLOAD
+   ============================================================ */
+
+.stDownloadButton > button {
     border: none;
-    border-radius: 11px;
-    font-weight: 600;
+    border-radius: 16px;
+    background: #8BD3A8;
+    color: white;
+    font-family: 'Baloo 2', cursive;
+    font-weight: 700;
+    box-shadow: 0 5px 0 #68B889;
 }
 
 .stDownloadButton > button:hover {
-    background: var(--brown-dark);
-    color: white;
+    background: #7BC798;
 }
 
-/* Alertas */
+
+/* ============================================================
+   FILE UPLOADER
+   ============================================================ */
+
+[data-testid="stFileUploader"] {
+    background: rgba(255,255,255,0.8);
+    border: 2px dashed #C9B8E8;
+    border-radius: 18px;
+}
+
+
+/* ============================================================
+   ALERTAS
+   ============================================================ */
+
 div[data-testid="stAlert"] {
-    border-radius: 13px;
+    border-radius: 18px;
+    font-family: 'Baloo 2', cursive;
 }
 
-/* Radio buttons */
+
+/* ============================================================
+   RADIO
+   ============================================================ */
+
 .stRadio label {
-    color: var(--brown-dark) !important;
+    color: #51465A !important;
+    font-weight: 600;
 }
 
-/* Checkbox */
-.stCheckbox label {
-    color: var(--brown-dark) !important;
-}
 
-/* Slider */
-.stSlider {
-    color: var(--olive);
-}
+/* ============================================================
+   DIVISORES
+   ============================================================ */
 
-/* Caption */
-.stCaption {
-    color: #8A8075 !important;
+hr {
+    border: none;
+    border-top: 2px dashed #FFD6E0;
+    margin: 1.5rem 0;
 }
 
 </style>
@@ -233,237 +261,63 @@ div[data-testid="stAlert"] {
 
 
 # ============================================================
-# STOPWORDS EN ESPAÑOL
+# CARPETA TEMPORAL
 # ============================================================
 
-STOPWORDS_ES = {
-    "de", "la", "que", "el", "en", "y", "a", "los", "del",
-    "se", "las", "por", "un", "para", "con", "no", "una",
-    "su", "al", "lo", "como", "más", "pero", "sus", "le",
-    "ya", "o", "este", "sí", "porque", "esta", "entre",
-    "cuando", "muy", "sin", "sobre", "también", "me",
-    "hasta", "hay", "donde", "quien", "desde", "todo",
-    "nos", "durante", "todos", "uno", "les", "ni", "contra",
-    "otros", "ese", "eso", "ante", "ellos", "e", "esto",
-    "mí", "antes", "algunos", "qué", "unos", "yo", "otro",
-    "otras", "otra", "él", "tanto", "esa", "estos", "mucho",
-    "quienes", "nada", "muchos", "cual", "poco", "ella",
-    "estar", "estas", "algunas", "algo", "nosotros", "mi",
-    "mis", "tú", "te", "ti", "tu", "tus", "ellas", "ellos",
-    "fue", "era", "son", "es", "ser", "han", "ha", "he",
-    "se", "está", "están", "estaba", "estaban"
-}
+os.makedirs("temp", exist_ok=True)
 
 
 # ============================================================
-# PALETAS
+# FUNCIÓN TEXT TO SPEECH
 # ============================================================
 
-PALETAS = {
+def text_to_speech(text, language):
 
-    # Originales
-    "Escala de grises": [
-        "#222222", "#444444", "#666666",
-        "#888888", "#AAAAAA", "#CCCCCC"
-    ],
+    if not text.strip():
+        return None
 
-    "Azul corporativo": [
-        "#0B1F3A", "#123B63", "#165A8A",
-        "#1D78B5", "#4599C8", "#83C0DF"
-    ],
-
-    "Verde institucional": [
-        "#12372A", "#1E5631", "#2E7D4F",
-        "#4E9F6A", "#75B985", "#A9D4B3"
-    ],
-
-    "Gris azulado": [
-        "#263238", "#37474F", "#455A64",
-        "#607D8B", "#78909C", "#B0BEC5"
-    ],
-
-    "Terracota": [
-        "#542E25", "#733E31", "#95513F",
-        "#B96A54", "#D28B73", "#E6B5A1"
-    ],
-
-    "Índigo profundo": [
-        "#20163D", "#30215C", "#42307B",
-        "#59439B", "#7764B7", "#A69BD1"
-    ],
-
-    "Monocromático negro": [
-        "#111111", "#222222", "#333333",
-        "#555555", "#777777", "#999999"
-    ],
-
-    "Rosado fiesta": [
-        "#641C3D", "#8E2854", "#B83E6B",
-        "#D75B83", "#EA86A4", "#F3B8C9"
-    ],
-
-    # Nuevas paletas neutras
-    "Café & crema": [
-        "#3B302A", "#59483D", "#7A6657",
-        "#9B8574", "#B8A99A", "#D8CEC2", "#EFE7DE"
-    ],
-
-    "Arena": [
-        "#4A4036", "#6B5B4D", "#8C7A67",
-        "#A99783", "#C1B3A3", "#D9CFC3", "#EEE7DF"
-    ],
-
-    "Oliva suave": [
-        "#3F4538", "#555E4A", "#69715A",
-        "#7E866D", "#9DA58B", "#BDC3AA", "#D9DDCE"
-    ],
-
-    "Terracota neutro": [
-        "#4A2F27", "#684138", "#865344",
-        "#A96A54", "#C1846B", "#D5A18B", "#E8C7B7"
-    ],
-
-    "Moca": [
-        "#2F2723", "#4A3A32", "#665047",
-        "#82695D", "#9D8376", "#BCA99D", "#D9CCC4"
-    ],
-
-    "Piedra": [
-        "#343434", "#4E4E4A", "#686761",
-        "#828077", "#9B978B", "#B8B2A5", "#D5D0C5"
-    ],
-
-    "Azul grisáceo neutro": [
-        "#28343B", "#3E4B52", "#56636A",
-        "#6F7B81", "#899398", "#AAB1B3", "#D0D3D2"
-    ],
-
-    "Lavanda gris": [
-        "#3D3945", "#55505F", "#6E6879",
-        "#898294", "#A39BAE", "#C1BAC7", "#DED9E1"
-    ],
-
-    "Sage & cream": [
-        "#3D463D", "#526053", "#687267",
-        "#7E887C", "#9CA498", "#BBC0B6", "#D9DDD6"
-    ]
-}
-
-
-# ============================================================
-# FORMAS
-# ============================================================
-
-FORMAS = {
-    "Rectángulo": None,
-    "Círculo": "circle"
-}
-
-
-# ============================================================
-# FUNCIONES
-# ============================================================
-
-def obtener_stopwords(idioma):
-    if idioma == "Español":
-        return STOPWORDS_ES
-    return set(STOPWORDS)
-
-
-def crear_mascara(tipo):
-    if tipo == "Círculo":
-        y, x = np.ogrid[-1:1:500j, -1:1:500j]
-        mask = x * x + y * y <= 1
-        return (mask * 255).astype(np.uint8)
-
-    return None
-
-
-def limpiar_texto(texto, stopwords, extras):
-    texto = texto.lower()
-
-    texto = re.sub(r"http\S+|www\S+", " ", texto)
-    texto = re.sub(r"[^a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s]", " ", texto)
-    texto = re.sub(r"\s+", " ", texto)
-
-    palabras = texto.split()
-
-    extras_set = {
-        palabra.strip().lower()
-        for palabra in extras.split(",")
-        if palabra.strip()
-    }
-
-    palabras_limpias = [
-        palabra
-        for palabra in palabras
-        if palabra not in stopwords
-        and palabra not in extras_set
-        and len(palabra) > 2
-    ]
-
-    return " ".join(palabras_limpias)
-
-
-def contar_palabras(texto):
-    palabras = texto.split()
-    return Counter(palabras)
-
-
-def generar_wordcloud(
-    texto,
-    paleta,
-    fondo,
-    forma,
-    max_words
-):
-
-    mask = crear_mascara(forma)
-
-    wc = WordCloud(
-        width=1400,
-        height=800,
-        background_color=fondo,
-        max_words=max_words,
-        mask=mask,
-        collocations=False,
-        color_func=None
+    tts = gTTS(
+        text=text,
+        lang=language,
+        slow=False
     )
 
-    wc.generate(texto)
+    # Nombre seguro para el archivo
+    nombre = "cuento_audio"
 
-    # Aplicar la paleta manualmente
-    colores = paleta
+    archivo = f"temp/{nombre}.mp3"
 
-    def color_func(
-        word,
-        font_size,
-        position,
-        orientation,
-        random_state=None,
-        **kwargs
-    ):
-        indice = np.random.randint(0, len(colores))
-        return colores[indice]
+    tts.save(archivo)
 
-    wc.recolor(color_func=color_func)
-
-    return wc
+    return archivo
 
 
-def fig_a_bytes(fig):
-    buffer = io.BytesIO()
+# ============================================================
+# LIMPIAR ARCHIVOS ANTIGUOS
+# ============================================================
 
-    fig.savefig(
-        buffer,
-        format="png",
-        dpi=200,
-        bbox_inches="tight",
-        facecolor=fig.get_facecolor()
-    )
+def remove_files(days):
 
-    buffer.seek(0)
-    return buffer.getvalue()
+    mp3_files = glob.glob("temp/*.mp3")
+
+    if len(mp3_files) == 0:
+        return
+
+    now = time.time()
+    seconds = days * 86400
+
+    for archivo in mp3_files:
+
+        try:
+
+            if os.stat(archivo).st_mtime < now - seconds:
+                os.remove(archivo)
+
+        except:
+            pass
+
+
+remove_files(7)
 
 
 # ============================================================
@@ -472,140 +326,34 @@ def fig_a_bytes(fig):
 
 with st.sidebar:
 
-    st.title("☁️ WordCloud Studio")
+    st.title("🧸 Mi cuento parlanchín")
 
-    st.caption("Crea nubes de palabras limpias, elegantes y personalizadas.")
-
-    st.divider()
-
-    st.subheader("📝 Fuente del texto")
-
-    fuente = st.radio(
-        "Selecciona una fuente",
-        ["Escribir / pegar", "Subir archivo"],
-        label_visibility="collapsed"
+    st.write(
+        "¡Escribe una historia y deja que yo te la lea! 🌈"
     )
 
-    texto = ""
-
-    if fuente == "Escribir / pegar":
-
-        ejemplo = st.selectbox(
-            "Usar un ejemplo",
-            [
-                "Ninguno",
-                "Inteligencia Artificial",
-                "Colombia",
-                "Tecnología 4.0"
-            ]
-        )
-
-        ejemplos = {
-            "Ninguno": "",
-            "Inteligencia Artificial": """
-            La inteligencia artificial está transformando la educación,
-            la tecnología, las empresas y la vida cotidiana.
-            Los sistemas inteligentes permiten analizar información,
-            automatizar procesos y crear nuevas experiencias.
-            """,
-
-            "Colombia": """
-            Colombia es un país diverso con diferentes culturas,
-            regiones, paisajes, tradiciones y comunidades.
-            Medellín, Bogotá, Cartagena, Cali y muchas otras ciudades
-            representan la diversidad cultural colombiana.
-            """,
-
-            "Tecnología 4.0": """
-            La tecnología 4.0 combina inteligencia artificial,
-            automatización, internet de las cosas, datos,
-            robótica, innovación y transformación digital.
-            """
-        }
-
-        texto = st.text_area(
-            "Escribe o pega tu texto",
-            value=ejemplos[ejemplo],
-            height=250,
-            placeholder="Escribe aquí el texto que quieres analizar..."
-        )
-
-    else:
-
-        archivo = st.file_uploader(
-            "Sube un archivo",
-            type=["txt", "csv"]
-        )
-
-        if archivo is not None:
-
-            try:
-
-                if archivo.name.endswith(".txt"):
-                    texto = archivo.read().decode("utf-8")
-
-                else:
-                    df_archivo = pd.read_csv(archivo)
-
-                    if len(df_archivo.columns) > 0:
-                        texto = " ".join(
-                            df_archivo.astype(str).values.flatten()
-                        )
-
-            except Exception as e:
-                st.error(f"No se pudo leer el archivo: {e}")
-
     st.divider()
 
-    st.subheader("🧹 Limpieza")
+    st.subheader("🌎 Idioma")
 
     idioma = st.selectbox(
-        "Idioma",
-        ["Español", "Inglés"]
+        "¿En qué idioma quieres escuchar?",
+        ["🇪🇸 Español", "🇺🇸 English"]
     )
 
-    palabras_extra = st.text_input(
-        "Palabras adicionales a excluir",
-        placeholder="ejemplo, palabra, texto"
-    )
+    if idioma == "🇪🇸 Español":
+        language_code = "es"
+    else:
+        language_code = "en"
 
     st.divider()
 
-    st.subheader("🎨 Apariencia")
+    st.subheader("💡 ¿Cómo funciona?")
 
-    paleta_nombre = st.selectbox(
-        "Paleta de colores",
-        list(PALETAS.keys()),
-        index=list(PALETAS.keys()).index("Café & crema")
-    )
-
-    fondo = st.radio(
-        "Fondo de la nube",
-        ["Blanco", "Negro"],
-        horizontal=True
-    )
-
-    fondo_color = "#FFFDF9" if fondo == "Blanco" else "#151515"
-
-    forma = st.selectbox(
-        "Forma",
-        list(FORMAS.keys())
-    )
-
-    max_words = st.slider(
-        "Máximo de palabras",
-        min_value=20,
-        max_value=300,
-        value=100,
-        step=10
-    )
-
-    st.divider()
-
-    generar = st.button(
-        "☁️ Generar WordCloud",
-        use_container_width=True
-    )
+    st.write("1️⃣ Escribe o pega tu texto.")
+    st.write("2️⃣ Elige el idioma.")
+    st.write("3️⃣ Presiona el botón.")
+    st.write("4️⃣ ¡Escucha tu historia! 🎧")
 
 
 # ============================================================
@@ -613,298 +361,142 @@ with st.sidebar:
 # ============================================================
 
 st.markdown(
-    '<div class="main-title">WordCloud Studio</div>',
+    '<div class="main-title">🧸 Mi cuento parlanchín</div>',
     unsafe_allow_html=True
 )
 
 st.markdown(
     '<div class="main-subtitle">'
-    'Transforma tus textos en visualizaciones de palabras '
-    'elegantes y personalizadas.'
+    '✨ Escribe algo divertido y yo lo convertiré en voz ✨'
     '</div>',
     unsafe_allow_html=True
 )
 
 
 # ============================================================
-# ESTADO INICIAL
+# TARJETA DE TEXTO
 # ============================================================
 
-if "wordcloud_generado" not in st.session_state:
-    st.session_state.wordcloud_generado = False
+st.markdown(
+    '<div class="story-card">',
+    unsafe_allow_html=True
+)
 
-if "texto_procesado" not in st.session_state:
-    st.session_state.texto_procesado = ""
+st.subheader("📖 ¡Escribe tu historia!")
 
-if "frecuencias" not in st.session_state:
-    st.session_state.frecuencias = Counter()
+st.write(
+    "Puedes escribir un cuento, una tarea, una historia "
+    "o cualquier texto que quieras escuchar."
+)
 
-if "wordcloud" not in st.session_state:
-    st.session_state.wordcloud = None
+texto = st.text_area(
+    "Texto para escuchar",
+    height=300,
+    placeholder=(
+        "Había una vez...\n\n"
+        "Escribe o pega aquí tu texto y luego presiona "
+        "el botón para escucharlo. 🌟"
+    ),
+    label_visibility="collapsed"
+)
+
+st.markdown(
+    '</div>',
+    unsafe_allow_html=True
+)
 
 
 # ============================================================
-# GENERACIÓN
+# BOTÓN DE GENERACIÓN
 # ============================================================
 
-if generar:
+col1, col2, col3 = st.columns([1, 2, 1])
+
+with col2:
+
+    convertir = st.button(
+        "🔊 ¡Quiero escucharlo!",
+        use_container_width=True
+    )
+
+
+# ============================================================
+# GENERAR AUDIO
+# ============================================================
+
+if convertir:
 
     if not texto.strip():
 
         st.warning(
-            "⚠️ Primero escribe, pega o sube un texto para generar la nube."
+            "✏️ ¡Primero escribe algo para poder leerlo!"
         )
 
     else:
 
-        with st.spinner("Analizando y creando tu nube de palabras..."):
+        with st.spinner("🪄 Preparando tu voz mágica..."):
 
-            stopwords = obtener_stopwords(idioma)
+            try:
 
-            texto_procesado = limpiar_texto(
-                texto,
-                stopwords,
-                palabras_extra
-            )
+                audio_path = text_to_speech(
+                    texto,
+                    language_code
+                )
 
-            if not texto_procesado.strip():
+                with open(audio_path, "rb") as audio_file:
+
+                    audio_bytes = audio_file.read()
+
+                st.success(
+                    "🎉 ¡Listo! Tu historia está preparada."
+                )
+
+                st.subheader("🎧 ¡Hora de escuchar!")
+
+                st.audio(
+                    audio_bytes,
+                    format="audio/mp3"
+                )
+
+                st.download_button(
+                    "💾 Guardar audio",
+                    data=audio_bytes,
+                    file_name="mi_cuento.mp3",
+                    mime="audio/mp3",
+                    use_container_width=True
+                )
+
+            except Exception as e:
 
                 st.error(
-                    "No quedaron palabras suficientes después de la limpieza."
+                    f"😿 No pudimos crear el audio. Error: {e}"
                 )
-
-            else:
-
-                frecuencias = contar_palabras(texto_procesado)
-
-                nube = generar_wordcloud(
-                    texto_procesado,
-                    PALETAS[paleta_nombre],
-                    fondo_color,
-                    forma,
-                    max_words
-                )
-
-                st.session_state.wordcloud_generado = True
-                st.session_state.texto_procesado = texto_procesado
-                st.session_state.frecuencias = frecuencias
-                st.session_state.wordcloud = nube
 
 
 # ============================================================
-# PANTALLA DE BIENVENIDA
+# MENSAJE FINAL
 # ============================================================
 
-if not st.session_state.wordcloud_generado:
+if not convertir:
 
     st.divider()
 
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        st.subheader("📝 Analiza")
-        st.write(
-            "Pega un texto o carga un archivo para comenzar."
+        st.info(
+            "📚 **Cuentos**\n\n"
+            "Escribe tus propias historias."
         )
 
     with col2:
-        st.subheader("🧹 Limpia")
-        st.write(
-            "Elimina palabras comunes y términos que no quieras analizar."
+        st.info(
+            "🎤 **Voz**\n\n"
+            "Convierte tus palabras en audio."
         )
 
     with col3:
-        st.subheader("🎨 Personaliza")
-        st.write(
-            "Elige colores, forma, fondo y cantidad de palabras."
+        st.info(
+            "🌈 **Diversión**\n\n"
+            "¡Escucha y disfruta!"
         )
-
-    st.info(
-        "💡 Consejo: utiliza textos suficientemente largos para obtener "
-        "una nube de palabras más representativa."
-    )
-
-
-# ============================================================
-# RESULTADOS
-# ============================================================
-
-if st.session_state.wordcloud_generado:
-
-    texto_procesado = st.session_state.texto_procesado
-    frecuencias = st.session_state.frecuencias
-    nube = st.session_state.wordcloud
-
-    st.divider()
-
-    st.subheader("📊 Resumen del análisis")
-
-    total_palabras = len(texto.split())
-    palabras_unicas = len(frecuencias)
-    palabra_mas_frecuente = (
-        frecuencias.most_common(1)[0][0]
-        if frecuencias
-        else "-"
-    )
-
-    col1, col2, col3, col4 = st.columns(4)
-
-    with col1:
-        st.metric(
-            "Palabras originales",
-            f"{total_palabras:,}"
-        )
-
-    with col2:
-        st.metric(
-            "Palabras únicas",
-            f"{palabras_unicas:,}"
-        )
-
-    with col3:
-        st.metric(
-            "Palabra principal",
-            palabra_mas_frecuente
-        )
-
-    with col4:
-        st.metric(
-            "Palabras mostradas",
-            f"{min(max_words, palabras_unicas):,}"
-        )
-
-    st.divider()
-
-    # ========================================================
-    # WORDCLOUD
-    # ========================================================
-
-    st.subheader("☁️ Tu WordCloud")
-
-    fig, ax = plt.subplots(
-        figsize=(15, 8)
-    )
-
-    ax.imshow(
-        nube,
-        interpolation="bilinear"
-    )
-
-    ax.axis("off")
-
-    fig.patch.set_facecolor(fondo_color)
-    ax.set_facecolor(fondo_color)
-
-    st.pyplot(
-        fig,
-        use_container_width=True
-    )
-
-    png_bytes = fig_a_bytes(fig)
-
-    plt.close(fig)
-
-    st.download_button(
-        "⬇️ Descargar WordCloud en PNG",
-        data=png_bytes,
-        file_name="wordcloud.png",
-        mime="image/png",
-        use_container_width=True
-    )
-
-    st.divider()
-
-    # ========================================================
-    # FRECUENCIAS
-    # ========================================================
-
-    st.subheader("📈 Palabras más frecuentes")
-
-    top_20 = frecuencias.most_common(20)
-
-    if top_20:
-
-        freq_df = pd.DataFrame(
-            top_20,
-            columns=["Palabra", "Frecuencia"]
-        )
-
-        col1, col2 = st.columns([1.15, 1])
-
-        with col1:
-
-            st.dataframe(
-                freq_df,
-                use_container_width=True,
-                hide_index=True
-            )
-
-        with col2:
-
-            fig2, ax2 = plt.subplots(
-                figsize=(8, 6)
-            )
-
-            palabras = [
-                item[0]
-                for item in reversed(top_20)
-            ]
-
-            cantidades = [
-                item[1]
-                for item in reversed(top_20)
-            ]
-
-            ax2.barh(
-                palabras,
-                cantidades
-            )
-
-            ax2.set_xlabel("Frecuencia")
-            ax2.set_ylabel("")
-
-            ax2.spines["top"].set_visible(False)
-            ax2.spines["right"].set_visible(False)
-
-            fig2.tight_layout()
-
-            st.pyplot(
-                fig2,
-                use_container_width=True
-            )
-
-            plt.close(fig2)
-
-        csv = freq_df.to_csv(
-            index=False
-        ).encode("utf-8")
-
-        st.download_button(
-            "⬇️ Descargar frecuencias CSV",
-            data=csv,
-            file_name="frecuencias_wordcloud.csv",
-            mime="text/csv",
-            use_container_width=True
-        )
-
-    st.divider()
-
-    # ========================================================
-    # TEXTO PROCESADO
-    # ========================================================
-
-    with st.expander("🔍 Ver texto procesado"):
-
-        st.write(
-            texto_procesado
-        )
-
-        st.caption(
-            f"Caracteres procesados: {len(texto_procesado):,}"
-        )
-
-    st.divider()
-
-    st.caption(
-        "WordCloud Studio · Visualización de texto"
-    )
