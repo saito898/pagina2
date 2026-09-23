@@ -582,6 +582,7 @@ if convertir:
                 st.success(
                     "🎉 ¡Listo! Tu historia está preparada."
                 )
+                st.balloons()
 
 
                 st.subheader(
